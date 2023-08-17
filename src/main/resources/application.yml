@@ -1,0 +1,6 @@
+spring:
+  datasource:
+    url: jdbc:mariadb://localhost:3306/vip
+    username: jefao
+    password: jefao
+    driver-class-name: org.mariadb.jdbc.Driver

@@ -1,8 +1,9 @@
 package com.example.streamingapi.controller
 
+import com.example.streamingapi.model.Message
 import org.springframework.http.MediaType
-import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
@@ -13,18 +14,18 @@ import java.util.stream.Stream
  * @author Jefferson Alves Reis (jefaokpta) < jefaokpta@hotmail.com >
  * Date: 17/08/23
  */
-@Controller
-class StreamController {
+@RestController
+class StreamController(private val messageService: MessageService) {
 
     @GetMapping("/sse")
     fun handleSse(): SseEmitter {
-        val emitter = SseEmitter()
+        val emitter = SseEmitter(TimeUnit.SECONDS.toMillis(50))
         try {
-            println("emitting")
+            println("emitting sse")
             CompletableFuture.runAsync {
-                createList()
+                messageService.findAllStream()
                     .forEach {
-                        emitter.send(it.toString() + "-SSE", MediaType.TEXT_PLAIN)
+                        emitter.send("${it.datetime} - ${it.text}", MediaType.TEXT_PLAIN)
                     }
                 emitter.send("CLOSE", MediaType.TEXT_PLAIN)
                 emitter.complete()
@@ -39,4 +40,10 @@ class StreamController {
         TimeUnit.SECONDS.sleep(1)
         it + 1
     }.limit(10)
+
+    @GetMapping("/list")
+    fun list(): Iterable<Message> {
+        println("listing")
+        return  messageService.findAll()
+    }
 }

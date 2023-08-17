@@ -3,12 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <title>Stream Data</title>
+    <style>
+        .container {
+            display: flex;
+        }
+    </style>
 </head>
 <body>
 
   <h1>Stream Data</h1>
 
-  <div id="sse"></div>
+  <div class="container">
+      <div id="sse"><h2>SSE</h2></div>
+      <div id="list"><h2>LIST</h2></div>
+  </div>
 
   <script>
       const sse = new EventSource('/sse');
@@ -19,6 +27,16 @@
           el.appendChild(document.createTextNode(evt.data));
           el.appendChild(document.createElement('br'));
       };
+
+      fetch('/list')
+        .then(response => response.json())
+        .then(json => {
+          const el = document.getElementById('list');
+          json.forEach(item => {
+            el.appendChild(document.createTextNode(item.datetime + ' - ' + item.text));
+            el.appendChild(document.createElement('br'));
+          })
+        })
 
   </script>
 </body>
