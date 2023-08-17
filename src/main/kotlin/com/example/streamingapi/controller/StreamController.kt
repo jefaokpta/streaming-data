@@ -1,9 +1,13 @@
 package com.example.streamingapi.controller
 
-import org.springframework.http.ResponseEntity
+import org.springframework.http.MediaType
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
+import java.util.stream.Stream
+
 
 /**
  * @author Jefferson Alves Reis (jefaokpta) < jefaokpta@hotmail.com >
@@ -12,19 +16,27 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 @Controller
 class StreamController {
 
-    @GetMapping("/stream")
-    fun listStream(): ResponseEntity<StreamingResponseBody>{
-        println("streaming")
-        val numberList = listOf(1, 2, 3, 4, 5, 6, 7, 8, 9)
-        val responseBody = StreamingResponseBody { outputStream ->
-            val writer = outputStream.bufferedWriter()
-            numberList.forEach {
-                writer.write(it.toString() + "Stream")
-//                writer.newLine()
-                Thread.sleep(1000)
+    @GetMapping("/sse")
+    fun handleSse(): SseEmitter {
+        val emitter = SseEmitter()
+        try {
+            println("emitting")
+            CompletableFuture.runAsync {
+                createList()
+                    .forEach {
+                        emitter.send(it.toString() + "-SSE", MediaType.TEXT_PLAIN)
+                    }
+                emitter.send("CLOSE", MediaType.TEXT_PLAIN)
+                emitter.complete()
             }
-            writer.flush()
+        } catch (ex: Exception) {
+            emitter.completeWithError(ex)
         }
-        return ResponseEntity.ok(responseBody)
+        return emitter
     }
+
+    private fun createList(): Stream<Int> = Stream.iterate(0) {
+        TimeUnit.SECONDS.sleep(1)
+        it + 1
+    }.limit(10)
 }

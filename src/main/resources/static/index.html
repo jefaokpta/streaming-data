@@ -8,31 +8,17 @@
 
   <h1>Stream Data</h1>
 
-  <script>
-    const xhr = function(url) {
-      return new Promise(function(resolve, reject) {
-          const xmhr = new XMLHttpRequest();
-          //...
-        xmhr.open("GET", url, true);
-        xmhr.send();
-        xmhr.onreadystatechange = function() {
-          if (xmhr.readyState !== 4) return;
-          if (xmhr.status === 200) {
-            resolve(xmhr.responseText);
-          } else {
-            reject(new Error(xmhr.statusText));
-          }
-        };
-      });
-    };
+  <div id="sse"></div>
 
-    xhr('/stream')
-            .then(function(success){
-                console.log(success, 'success');
-            })
-            .catch(function(error){
-                console.log(error);
-            });
+  <script>
+      const sse = new EventSource('/sse');
+
+      sse.onmessage = function (evt) {
+          if (evt.data === 'CLOSE') return sse.close();
+          const el = document.getElementById('sse');
+          el.appendChild(document.createTextNode(evt.data));
+          el.appendChild(document.createElement('br'));
+      };
 
   </script>
 </body>
