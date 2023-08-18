@@ -19,11 +19,12 @@ class StreamController(private val messageService: MessageService) {
 
     @GetMapping("/sse")
     fun handleSse(): SseEmitter {
-        val emitter = SseEmitter(TimeUnit.SECONDS.toMillis(50))
+        val emitter = SseEmitter(TimeUnit.MINUTES.toMillis(1))
         try {
             println("emitting sse")
             CompletableFuture.runAsync {
                 messageService.findAllStream()
+                    .limit(8000)
                     .forEach {
                         emitter.send("${it.datetime} - ${it.text}", MediaType.TEXT_PLAIN)
                     }
@@ -42,8 +43,12 @@ class StreamController(private val messageService: MessageService) {
     }.limit(10)
 
     @GetMapping("/list")
-    fun list(): Iterable<Message> {
+    fun list(): List<Message> {
         println("listing")
         return  messageService.findAll()
+            .toList()
+            .stream()
+            .limit(8000)
+            .toList()
     }
 }

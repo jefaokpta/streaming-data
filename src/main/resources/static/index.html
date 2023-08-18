@@ -6,6 +6,8 @@
     <style>
         .container {
             display: flex;
+            justify-content: space-between;
+            width: 90%;
         }
     </style>
 </head>
@@ -14,29 +16,36 @@
   <h1>Stream Data</h1>
 
   <div class="container">
-      <div id="sse"><h2>SSE</h2></div>
-      <div id="list"><h2>LIST</h2></div>
+      <div id="sse"><h2> -SSE- </h2></div>
+      <div id="list"><h2> -LIST- </h2></div>
   </div>
 
   <script>
-      const sse = new EventSource('/sse');
+      sse();
+      list();
 
-      sse.onmessage = function (evt) {
-          if (evt.data === 'CLOSE') return sse.close();
-          const el = document.getElementById('sse');
-          el.appendChild(document.createTextNode(evt.data));
-          el.appendChild(document.createElement('br'));
-      };
+      function sse() {
+          const sse = new EventSource('/sse');
 
-      fetch('/list')
-        .then(response => response.json())
-        .then(json => {
-          const el = document.getElementById('list');
-          json.forEach(item => {
-            el.appendChild(document.createTextNode(item.datetime + ' - ' + item.text));
-            el.appendChild(document.createElement('br'));
-          })
-        })
+          sse.onmessage = function (evt) {
+              if (evt.data === 'CLOSE') return sse.close();
+              const el = document.getElementById('sse');
+              el.appendChild(document.createTextNode(evt.data));
+              el.appendChild(document.createElement('br'));
+          };
+      }
+
+      function list() {
+          fetch('/list')
+              .then(response => response.json())
+              .then(json => {
+                  const el = document.getElementById('list');
+                  json.forEach(item => {
+                      el.appendChild(document.createTextNode(item.datetime + ' - ' + item.text));
+                      el.appendChild(document.createElement('br'));
+                  })
+              })
+      }
 
   </script>
 </body>
