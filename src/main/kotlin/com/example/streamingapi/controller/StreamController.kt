@@ -1,7 +1,9 @@
 package com.example.streamingapi.controller
 
 import com.example.streamingapi.model.Message
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.springframework.http.MediaType
+import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
@@ -18,15 +20,16 @@ import java.util.stream.Stream
 class StreamController(private val messageService: MessageService) {
 
     @GetMapping("/sse")
+    @CrossOrigin
     fun handleSse(): SseEmitter {
-        val emitter = SseEmitter(TimeUnit.MINUTES.toMillis(1))
+        val emitter = SseEmitter()
         try {
             println("emitting sse")
             CompletableFuture.runAsync {
                 messageService.findAllStream()
                     .limit(8000)
                     .forEach {
-                        emitter.send("${it.datetime} - ${it.text}", MediaType.TEXT_PLAIN)
+                        emitter.send(jacksonObjectMapper().writeValueAsString(it), MediaType.APPLICATION_JSON)
                     }
                 emitter.send("CLOSE", MediaType.TEXT_PLAIN)
                 emitter.complete()
