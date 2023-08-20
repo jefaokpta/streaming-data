@@ -8,5 +8,5 @@ import java.util.stream.Stream
 interface MessageRepository: CrudRepository<Message, String>{
 
     @Transactional(readOnly = true)
-    fun findTop8ByOrderByDatetimeDesc(): Stream<Message>
+    fun findTop8000ByOrderByDatetimeDesc(): Stream<Message>
 }

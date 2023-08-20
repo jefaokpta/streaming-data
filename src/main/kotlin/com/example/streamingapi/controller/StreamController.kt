@@ -13,10 +13,11 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class StreamController(private val messageService: MessageService) {
 
-    @GetMapping("/sse")
     @CrossOrigin
+    @GetMapping("/sse")
     fun handleSse() = messageService.sse()
 
+    @CrossOrigin
     @GetMapping("/list")
     fun list(): List<Message> {
         println("listing")

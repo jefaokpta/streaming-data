@@ -4,3 +4,7 @@ spring:
     username: jefao
     password: jefao
     driver-class-name: org.mariadb.jdbc.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      idle-timeout: 30000

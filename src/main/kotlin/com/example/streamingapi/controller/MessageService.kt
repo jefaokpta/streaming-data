@@ -16,7 +16,7 @@ class MessageService(private val messageRepository: MessageRepository) {
         println("sse")
         Executors.newSingleThreadExecutor().execute {
             try {
-                messageRepository.findTop8ByOrderByDatetimeDesc()
+                messageRepository.findTop8000ByOrderByDatetimeDesc()
                     .forEach {
                         emitter.send(
                             SseEmitter.event()
