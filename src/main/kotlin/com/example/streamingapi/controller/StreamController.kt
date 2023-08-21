@@ -22,9 +22,9 @@ class StreamController(private val messageService: MessageService) {
     fun list(): List<Message> {
         println("listing")
         return  messageService.findAll()
-            .toList()
-            .stream()
-            .limit(8000)
-            .toList()
     }
+
+    @CrossOrigin
+    @GetMapping("/stream")
+    fun handleStream() = messageService.streamingResponseBody()
 }

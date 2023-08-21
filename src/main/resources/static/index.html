@@ -18,12 +18,14 @@
   <div class="container">
       <div id="sse"><h2> -SSE- </h2></div>
       <div id="list"><h2> -LIST- </h2></div>
+      <div id="stream"><h2> -STREAMING- </h2></div>
   </div>
 
   <script>
-      sse();
+      // sse();
       list();
-
+      // stream();
+      // streamResponseBody();
       function sse() {
           const sse = new EventSource('/sse');
 
@@ -45,6 +47,49 @@
                       el.appendChild(document.createElement('br'));
                   })
               })
+      }
+
+      function stream(){
+          const el = document.getElementById('stream');
+          fetch('/stream')
+              .then(response => response.text())
+              // .then(json => console.log(json))
+              // .then(json => console.log(JSON.parse(json)))
+              .then(json => {
+                  console.log(json)
+                  el.appendChild(document.createTextNode(json));
+                  el.appendChild(document.createElement('br'));
+              })
+      }
+      function streamResponseBody() {
+          const el = document.getElementById('stream');
+            fetch('/stream')
+                .then(response => {
+                    const reader = response.body.getReader();
+                    const stream = new ReadableStream({
+                        start(controller) {
+                            return pump();
+                            function pump() {
+                                return reader.read().then(({done, value}) => {
+                                    // When no more data needs to be consumed, close the stream
+                                    if (done) {
+                                        controller.close();
+                                        return;
+                                    }
+                                    // Enqueue the next data chunk into our target stream
+                                    controller.enqueue(value);
+                                    return pump();
+                                });
+                            }
+                        }
+                    });
+                    return new Response(stream, { headers: { "Content-Type": "text/html" } }).text();
+                })
+                .then(json => {
+                    console.log(json)
+                    el.appendChild(document.createTextNode(json));
+                    el.appendChild(document.createElement('br'));
+                })
       }
 
   </script>

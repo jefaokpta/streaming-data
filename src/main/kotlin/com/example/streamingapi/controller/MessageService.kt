@@ -4,19 +4,20 @@ import com.example.streamingapi.repository.MessageRepository
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.springframework.stereotype.Service
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody
 import java.util.concurrent.Executors
 
 @Service
 class MessageService(private val messageRepository: MessageRepository) {
 
-    fun findAll() = messageRepository.findAll()
+    fun findAll() = messageRepository.list80000()
 
     fun sse(): SseEmitter {
         val emitter = SseEmitter()
         println("sse")
         Executors.newSingleThreadExecutor().execute {
             try {
-                messageRepository.findTop8000ByOrderByDatetimeDesc()
+                messageRepository.findTop80000ByOrderByDatetimeDesc()
                     .forEach {
                         emitter.send(
                             SseEmitter.event()
@@ -35,6 +36,16 @@ class MessageService(private val messageRepository: MessageRepository) {
             }
         }
         return emitter
+    }
+
+    fun streamingResponseBody(): StreamingResponseBody {
+        println("streamingResponseBody")
+        return StreamingResponseBody { outputStream ->
+                messageRepository.findTop80000ByOrderByDatetimeDesc()
+                    .forEach {
+                        outputStream.write(jacksonObjectMapper().writeValueAsString(it).toByteArray())
+                    }
+        }
     }
 
 }
